@@ -1,0 +1,39 @@
+.data
+
+.text
+
+MAIN: # note we must write things sequentially, as mips processes sequentially. That is why main is at the top, and the rest follow.
+
+# initalize arbitrary values 
+li $s0, 1
+li $s1, 2
+
+# initialize arguments that will be used for SEFA_myadd
+add $a0, $s0, $zero
+add $a1, $s1, $zero
+
+jal SEFA_myadd
+
+# this is to go to the end of the program file when we are done
+j End
+
+SEFA_myadd:
+# store data of current temp registers that will be used. 
+
+addi $sp, $sp, -4 # move stack pointer by 1 words
+sw $t0, 0($sp) # store the register we will use
+
+# perform the arithmetic
+add $t0, $a0, $a1
+
+# return the arithemetic
+add $v0, $t0, $zero
+
+#load original register values + deallocate stack space
+lw $t0, 0($sp)
+addi, $sp, $sp, 4
+
+# return to main
+jr $ra 
+
+End:
