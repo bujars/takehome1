@@ -1,0 +1,87 @@
+.data
+b: .word -1
+newline: .asciiz "\n"
+.text
+
+MAIN:
+
+# note all return values are on $v0 register!
+jal SEFA_natural_generator
+
+# print the result
+add $a0, $zero, $v0 # we need to bring in the return value of our function as an argument for printing.
+li $v0, 1 ## WE need to set the system call value to be 1 for integer
+syscall
+
+# print a new line
+li $v0, 4
+la $a0, newline# we need to set syscall to 4 -- string
+syscall
+
+jal SEFA_natural_generator
+
+# print the result
+add $a0, $zero, $v0 # we need to bring in the return value of our function as an argument for printing.
+li $v0, 1 ## WE need to set the system call value to be 4 -- ie print
+syscall
+
+# print a new line
+li $v0, 4
+la $a0, newline# we need to set syscall to 4 -- string
+syscall
+
+
+jal SEFA_natural_generator
+
+# print the result
+add $a0, $zero, $v0 # we need to bring in the return value of our function as an argument for printing.
+li $v0, 1 ## WE need to set the system call value to be 4 -- ie print
+syscall
+
+# print a new line
+li $v0, 4
+la $a0, newline# we need to set syscall to 4 -- string
+syscall
+
+
+
+j END 
+
+
+
+
+SEFA_natural_generator:
+# store old register values that we will need to use on stack
+addi $sp, $sp, -16 # we need to store t1, t0, t2, and s0 onto stack --> so 4 words 
+
+# order of storing doesnt matter, as long as we put it back properly. 
+sw $t0, 0($sp)
+sw $t1, 4($sp)
+sw $t2, 8($sp)
+sw $s0, 12($sp)
+
+li $t1, 1 # Register t1 to represent variable a = 1
+la $s0, b # Register s0 to represent address of variable b
+lw $t2, 0($s0) # Register t2 to hold the value of b
+addi $t2, $t2, 1 # increment b by 1
+
+sw $t2, 0($s0) # because b is static varaible, we must also store the updated value of b in memory
+
+
+add $t0, $t1, $t2 # t0 = a + b
+
+add $v0, $zero, $t0 # place a + b in return 
+
+
+# restore old register values that are on stack
+lw $t0, 0($sp)
+lw $t1, 4($sp)
+lw $t2, 8($sp)
+lw $s0, 12($sp)
+
+addi $sp, $sp, 16 # deallocate the space (increase address of sp back) 
+
+jr $ra # go back to the caller
+
+
+END: # this is so that we don't go back to natural generator when we are done. Recall everyhting is sequential. 
