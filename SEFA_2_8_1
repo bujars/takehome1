@@ -1,0 +1,69 @@
+.data
+f: .word 0
+g: .word 50
+h: .word 40
+i: .word 30
+j: .word 20
+
+
+.text
+# Load the initial value of the registers. Note presumably, the arguments are set before the call. (in whomever calls it)
+# One thing that hasn't been made clear to me, is do we save the value of the arguments onto the stack, before making another fucntion call??
+# because wouldn't those values just be lost then? TBH I'm not so sure. 
+lw $a0, g
+lw $a1, h
+lw $a2, i
+lw $a3, j
+lw $s0, f
+
+
+leaf_example: # Define the procedure name
+
+# Next, Save the registers used by the procedure. We will use three registers, t1, t0, s0.
+# We must push the old values onto the stack by creating space for these three words (3*4 = 12 bytes) on the stack and then store them. 
+
+addi $sp, $sp, -12 # adjust the stack to make room for 3 items (send the stack pointer down)
+sw $t1, 8($sp) # save register $t1 for use afterward
+sw $t0, 4($sp) # save register $t0 for use afterward
+sw $s0, 0($sp) # save register $s0 for use afterward. 
+
+
+# The next three statements correspond to the body of the procedure
+
+add $t0, $a0, $a1 # register $t0 contains g + h
+add $t1, $a1, $a3 # register $t1 contains i + j
+sub $s0, $t0, $t1 # f = $t0 - $t1, which is (g+h) - (i+j) 
+
+
+# To return the value of f, we copy it into a return value register.
+
+add $v0, $s0, $zero # move the value of register s0 to v0 . Recall MIPS uses add for moving! (No move instruction) 
+# Recall $v0 is one of the return registers. This is what gets returned to our caller.
+
+
+# Before returning, we restore the three old values of the registers we saved by "popping" them from the stack: 
+
+lw $s0, 0($sp) # restore register $s0 for caller
+lw $t0, 4($sp) # restore register $t0 for caller
+lw $t1, 8($sp) # restore register $t1 for caller 
+addi $sp, $sp, 12 # adjust the stack to delete the three items we were once storing
+
+
+# The procedure ends with a jump register using the return address
+
+jr $ra # jump back to the calling routine
+# Note this will cause an error when running, because we have started from anywhere!!!!! or maybe i coded something wrong lol
+
+
+
+# Some notes about this example
+# Here we focus on the fundamentals of procedures
+# to define a procedure, we just use a label, like we have in branching. 
+# The one thing that mus tbe noted, is that arguments must be loaded onto the a-registers before we jump to the procedure (as those are what we use)
+# then the first thing that must happen in the procedure, is we must save all of the temp registers that we will use for this onto the stack, then do our procedure, 
+# and then load back the old values into the registers
+
+
+# other than that, the only thing that must be noted is how we allocate and deallocate space using the stack pointer (and how to check which base we start 
+# from in the memory window) 
+# Also adding / subtracting addresses (which is what allcocating/deallocating space does) 
