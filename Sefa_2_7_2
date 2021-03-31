@@ -1,0 +1,44 @@
+.data
+i: .word 0
+k: .word 10
+save: .word 10, 10, 10, 10, 10, 10, 3, 2, 1
+# predefined save with values in each element (so that we don't have to manually do it during run time). Note however this is in memory not temp.
+
+.text
+#load initialize values and address onto registers 
+lw $s3, i
+lw $s5, k
+la $s6, save
+
+Loop: sll $t1, $s3, 2 # Temp register $t1 = i * 4 
+# First we need to handle multiplying the index i by 4 because of the byte addressing problem. (that is in instruction/memory index differes by 4 bytes each time, not by 1.
+
+add $t1, $t1, $s6 # $t1 = address of save[i] 
+# To get the address of save[i] we need to add $t1 to the base of save ($s6) 
+
+lw $t0, 0($t1) # Temp register $t0 = save[i] 
+# Use the address to load save[i] into temporary register. This is the only way it can be used as am operand. 
+
+# recall this is a while loop ( or do while) which is , get the element , check if it meets the statement, if it does,  
+# proceed by moving 1 and to the next element. # if not, jump to exit, which is outside the while loop. 
+
+bne $t0, $s5, Exit # go to Exit if save[i] =/= k 
+# This instruction performs the LOOP TEST!!!! Ie the conditional part where we either execute the stuff inside the loop, or exit the loop 
+# it might be confusing since we performed some things in loop label before the loop test, but that is just the setting up the variables  
+# which are required for conducting the loop test.
+
+addi $s3, $s3, 1 # i = i + 1 
+# Add 1 to i. recall we are ading a constant/immediate. Thus we use add immediate. 
+
+j Loop # go to Loop 
+# The end of the loop branches back to the while test at the top of the loop.
+
+Exit:  
+# the exit outside of the loop. 
+
+
+# So main thing to note is that we can have a loop by a loop label and loop condiiton test (exit if not met, where exit is outside the loop). 
+# notice that some instructions happen between loop label and the test, and these are the variables required for the loop test 
+# (the ones that change based on i and must be evaluated). 
+# Here we will see that i (s3) terminates with the index of the current address that doesn't meet the condition which is 6 (or the 7th element but recall 0 indexing)
+# the address of the 7th element is stored in $t1. 
